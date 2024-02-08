@@ -1,0 +1,66 @@
+//
+// Copyright (C) 2016 David Eckhoff <david.eckhoff@fau.de>
+//
+// Documentation for these modules is at http://veins.car2x.org/
+//
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+
+#pragma once
+
+#include "veins/modules/application/ieee80211p/DemoBaseApplLayer.h"
+
+#include "veins/base/utils/SimpleAddress.h"
+
+#include "veins/modules/application/traci/ResourcePool.h"
+#include "veins/modules/application/traci/Vehicle.h"
+#include "veins/modules/application/traci/Request.h"
+
+
+namespace veins {
+
+/**
+ * Small RSU Demo using 11p
+ */
+class VEINS_API TraCIDemoRSU11p : public DemoBaseApplLayer {
+
+public:
+    void initialize(int stage) override;
+
+protected:
+//    std::set<LAddress::L2Type> connectedNodes;
+    std::map<LAddress::L2Type, simtime_t> connectedNodes;
+//    std::set<std::string> processedMessagesRM;
+    std::set<std::string> processedMessagesReqM;
+    double maxInterferenceDistance;
+public:
+    void onWSM(BaseFrame1609_4* wsm) override;
+    void onWSA(DemoServiceAdvertisment* wsa) override;
+    void onRM(ReportMessage* rm) override;
+    void handleSelfMsg(cMessage* msg) override;
+    void onReqM(requestM* reqM) override;
+private:
+    int falseCount = 0;
+    int slotReqCount = 0;
+    double oldFalseR = 0;
+    cMessage* cleanupTimer; // timer message
+    double cleanupInterval = 3; // clean interval
+    ResourcePool pool;
+    virtual double calculateTimeToEdge(const Coord& r, double x1, double y1, double x2, double y2, double time, double radius);
+};
+
+} // namespace veins
